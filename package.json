@@ -1,0 +1,73 @@
+{
+  "name": "@rtbhouse/google-iap-auth",
+  "version": "0.1.0",
+  "description": "Helper library to perfrorm requests to OIDC-authenticated resources (Cloud Identity-Aware Proxy)",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "module": "dist/esm/index.js",
+  "files": [
+    "dist/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run build && npm run lint",
+    "start": "tsc && node --es-module-specifier-resolution=node dist/test.js",
+    "lint": "eslint '*/**/*.{js,ts}'",
+    "lint:fix": "eslint --fix '*/**/*.{js,ts}'",
+    "test": "jest --config jestconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rtbhouse-apps/google-iap-auth-nodejs.git"
+  },
+  "keywords": [
+    "google",
+    "iap",
+    "auth",
+    "javascript",
+    "identity",
+    "aware",
+    "proxy"
+  ],
+  "author": "RTB House <apps@rtbhouse.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rtbhouse-apps/google-iap-auth-nodejs/issues"
+  },
+  "homepage": "https://github.com/rtbhouse-apps/google-iap-auth-nodejs",
+  "dependencies": {
+    "jwt-simple": "^0.5.6",
+    "lodash.camelcase": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@types/jwt-simple": "^0.5.33",
+    "@types/lodash.camelcase": "^4.3.6",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^24.9.0",
+    "nock": "^11.7.2",
+    "rimraf": "^3.0.0",
+    "rollup": "^1.29.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.4"
+  },
+  "engines": {
+    "node": ">= 8",
+    "npm": ">= 5"
+  }
+}

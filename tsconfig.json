@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["dom", "es2015"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "rootDir": "src",
+    "outDir": "./dist",
+    "sourceRoot": "src",
+    "esModuleInterop": true,
+    "strict": true,
+    "removeComments": false,
+    "strictNullChecks": true
+  },
+  "include": ["src", "tests/test.ts"],
+  "exclude": ["node_modules", "tests"]
+}

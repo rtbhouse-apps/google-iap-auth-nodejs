@@ -1,0 +1,8 @@
+/src
+.editorconfig
+.eslintignore
+.eslintrc.json
+tsconfig.json
+jestconfig.json
+rollup.config.js
+/.coverage
