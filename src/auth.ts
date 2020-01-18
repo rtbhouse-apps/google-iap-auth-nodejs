@@ -1,82 +1,73 @@
-import fs from 'fs';
-import https from 'https';
+import fetch from 'node-fetch';
 import jwt from 'jwt-simple';
-import camelCase from 'lodash.camelcase';
 
-import GoogleIapAuthError from './error';
+import { GoogleIapAuthError } from './error';
 
 
-interface KeyData {
+const ONE_HOUR = 60 * 60;
+const HALF_HOUR = 30 * 60;
+
+
+export interface GoogleServiceAccountKey {
   type: string;
-  projectId: string;
-  privateKeyId: string;
-  privateKey: string;
-  clientEmail: string;
-  clientId: string;
-  authUri: string;
-  tokenUri: string;
-  authProviderX509CertUrl: string;
-  clientX509CertUrl: string;
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+  client_id: string;
+  auth_uri: string;
+  token_uri: string;
+  auth_provider_x509_cert_url: string;
+  client_x509_cert_url: string;
 }
 
 
-export default class GoogleIapAuth {
+export class GoogleIapAuth {
   protected static readonly oauthTokenUri = 'https://www.googleapis.com/oauth2/v4/token';
-
   protected static readonly jwtBearerTokenGrantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
 
   protected googleIapJwt?: string;
 
-  /* eslint-disable no-useless-constructor, no-unused-vars, no-empty-function */
   constructor(
     protected clientId: string,
-    protected keyFile: string,
-    protected tokenSoftExpiration = 30 * 60,
-  ) {}
-  /* eslint-enable */
+    protected googleServiceAccountKey: GoogleServiceAccountKey,
+    protected tokenSoftExpiration = HALF_HOUR
+  ) {
+    if (
+      googleServiceAccountKey.private_key === undefined
+      || googleServiceAccountKey.private_key_id === undefined
+      || googleServiceAccountKey.client_email === undefined
+    ) {
+      throw new GoogleIapAuthError('Invalid JSON key file format');
+    }
+  }
 
   public async getToken(): Promise<string> {
-    if (this.googleIapJwt && !this.isJwtExpired(this.googleIapJwt)) {
+    if (this.googleIapJwt && !this.isJwtExpired()) {
       return this.googleIapJwt;
     }
-    const keyData = await this.readKeyData();
-    const jwtAssertion = await this.getJwtAssertion(keyData);
+    const jwtAssertion = await this.createJwtAssertion();
     this.googleIapJwt = await GoogleIapAuth.getGoogleOpenIdConnectToken(jwtAssertion);
     return this.googleIapJwt;
   }
 
-  protected isJwtExpired(jwtToken: string): boolean {
-    return jwt.decode(jwtToken, '', true).iat + this.tokenSoftExpiration > this.nowTimestamp();
-  }
-
-  protected async readKeyData(): Promise<KeyData> {
-    const keyStr = await fs.promises.readFile(this.keyFile, 'utf-8');
-    const keyRawData = JSON.parse(keyStr);
-    const keyData = Object.assign(
-      {},
-      ...Object.entries(keyRawData).map(([k, v]) => ({ [camelCase(k)]: v })),
+  protected isJwtExpired(): boolean {
+    return (
+      jwt.decode(this.googleIapJwt!, '', true).iat + this.tokenSoftExpiration < this.nowTimestamp()
     );
-    if (
-      keyData.privateKey === undefined
-      || keyData.privateKey === undefined
-      || keyData.clientEmail === undefined
-    ) {
-      throw new GoogleIapAuthError('Invalid JSON key file format');
-    }
-    return keyData;
   }
 
-  protected async getJwtAssertion(keyData: KeyData): Promise<string> {
+  protected async createJwtAssertion(): Promise<string> {
     const message = {
-      kid: keyData.privateKeyId,
-      iss: keyData.clientEmail,
-      sub: keyData.clientEmail,
+      kid: this.googleServiceAccountKey.private_key_id,
+      iss: this.googleServiceAccountKey.client_email,
+      sub: this.googleServiceAccountKey.client_email,
       aud: GoogleIapAuth.oauthTokenUri,
       iat: this.nowTimestamp(),
-      exp: this.nowTimestamp() + 60 * 60,
+      exp: this.nowTimestamp() + ONE_HOUR,
       target_audience: this.clientId,
     };
-    return jwt.encode(message, keyData.privateKey, 'RS256');
+    return jwt.encode(message, this.googleServiceAccountKey.private_key, 'RS256');
   }
 
   protected static async getGoogleOpenIdConnectToken(jwtAssertion: string): Promise<string> {
@@ -84,44 +75,22 @@ export default class GoogleIapAuth {
       assertion: jwtAssertion,
       grant_type: GoogleIapAuth.jwtBearerTokenGrantType,
     });
-
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': data.length,
-      },
-    };
-    return new Promise<string>((resolve, reject) => {
-      const req = https.request(GoogleIapAuth.oauthTokenUri, options, (res) => {
-        res.setEncoding('utf-8');
-        let responseBody = '';
-
-        res.on('data', (chunk) => {
-          responseBody += chunk;
-        });
-
-        res.on('end', () => {
-          try {
-            const bodyData = JSON.parse(responseBody);
-            if (res.statusCode === 200) {
-              resolve(bodyData.id_token);
-            } else {
-              reject(new GoogleIapAuthError(bodyData.error_description));
-            }
-          } catch (err) {
-            reject(new GoogleIapAuthError('Unexpected response from Google service'));
-          }
-        });
-      });
-
-      req.on('error', (err) => {
-        reject(err);
-      });
-
-      req.write(data);
-      req.end();
-    });
+    const response = await fetch(
+      this.oauthTokenUri,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: data
+      }
+    );
+    const responseData = await response.json();
+    if (response.status !== 200) {
+      const errMessage = responseData.error_description ?? 'Unexpected response from Google service';
+      throw(new GoogleIapAuthError(errMessage));
+    }
+    return responseData.id_token;
   }
 
   protected nowTimestamp = () => Math.floor(Date.now() / 1000);

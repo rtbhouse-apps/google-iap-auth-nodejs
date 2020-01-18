@@ -21,13 +21,14 @@ To use this library you must have the following:
 Example usage with [got](https://www.npmjs.com/package/got):
 
 ```typescript
+import fs from 'fs';
 import got from "got";
 import { GoogleIapAuth } from "@rtbhouse/google-iap-auth";
 
-const googleIapAuth = new GoogleIapAuth(
-  "<oauth_client>",
-  "<path_to_keyfile.json>"
-);
+
+const keyStr = await fs.readFileSync('key.json', 'utf-8');
+const keyData = JSON.parse(keyStr);
+const googleIapAuth = new GoogleIapAuth("<oauth_client>", keyData);
 const authorizedGot = got.extend({
   hooks: {
     beforeRequest: [
@@ -48,4 +49,3 @@ const authorizedGot = got.extend({
   console.log(response.statusCode);
   console.log(response.body);
 })();
-```

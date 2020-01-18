@@ -1,5 +1,5 @@
-import GoogleIapAuth from './auth';
-import GoogleIapAuthError from './error';
+import { GoogleIapAuth, GoogleServiceAccountKey } from './auth';
+import { GoogleIapAuthError } from './error';
 
 
-export { GoogleIapAuth, GoogleIapAuthError };
+export { GoogleIapAuth, GoogleIapAuthError, GoogleServiceAccountKey };
