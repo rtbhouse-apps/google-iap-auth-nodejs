@@ -43,7 +43,7 @@ export class GoogleIapAuth {
     }
     return this.getTokenAsyncPendingPromise;
   }
-  
+
   private async getTokenAsync(): Promise<string> {
     const googleIapSession = this.getGoogleIapSessionIfValid() || await this.createGoogleIapSession();
     return googleIapSession.googleIapJwt;
@@ -100,7 +100,7 @@ export class GoogleIapAuth {
     );
 
     if (!response.ok) {
-      let errorMessage: string | undefined = undefined;
+      let errorMessage: string | undefined;
       try {
         const responseData = await response.json();
         errorMessage = responseData.error_description;
