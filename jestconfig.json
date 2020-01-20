@@ -1,0 +1,6 @@
+{
+  "preset": "ts-jest",
+  "rootDir": "./tests",
+  "testMatch": ["<rootDir>/**/*.ts"],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+}
