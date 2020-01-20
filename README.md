@@ -26,9 +26,9 @@ import got from "got";
 import { GoogleIapAuth } from "@rtbhouse/google-iap-auth";
 
 
-const keyStr = await fs.readFileSync('key.json', 'utf-8');
+const keyStr = fs.readFileSync('key.json', 'utf-8');
 const keyData = JSON.parse(keyStr);
-const googleIapAuth = new GoogleIapAuth("<oauth_client>", keyData);
+const googleIapAuth = new GoogleIapAuth("<oauth_client_id>", keyData);
 const authorizedGot = got.extend({
   hooks: {
     beforeRequest: [

@@ -26,12 +26,15 @@ export class GoogleIapAuth {
   protected static readonly oauthTokenUri = 'https://www.googleapis.com/oauth2/v4/token';
   protected static readonly jwtBearerTokenGrantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
 
+  protected tokenSoftExpiration: number;
   protected googleIapJwt?: string;
+  protected tokenIssuedAt?: number;
+  protected getTokenAsyncPromise?: Promise<string>;
 
   constructor(
     protected clientId: string,
     protected googleServiceAccountKey: GoogleServiceAccountKey,
-    protected tokenSoftExpiration = HALF_HOUR
+    tokenSoftExpiration = HALF_HOUR
   ) {
     if (
       googleServiceAccountKey.private_key === undefined
@@ -40,20 +43,32 @@ export class GoogleIapAuth {
     ) {
       throw new GoogleIapAuthError('Invalid JSON key file format');
     }
+    this.tokenSoftExpiration = Math.min(tokenSoftExpiration, ONE_HOUR);
   }
 
   public async getToken(): Promise<string> {
+    if (this.getTokenAsyncPromise === undefined) {
+      this.getTokenAsyncPromise = this.getTokenAsync();
+      const result = await this.getTokenAsyncPromise;
+      this.getTokenAsyncPromise = undefined;
+      return result;
+    }
+    return this.getTokenAsyncPromise;
+  }
+
+  private async getTokenAsync(): Promise<string> {
     if (this.googleIapJwt && !this.isJwtExpired()) {
       return this.googleIapJwt;
     }
     const jwtAssertion = await this.createJwtAssertion();
     this.googleIapJwt = await GoogleIapAuth.getGoogleOpenIdConnectToken(jwtAssertion);
+    this.tokenIssuedAt = jwt.decode(this.googleIapJwt, '', true).iat;
     return this.googleIapJwt;
   }
 
   protected isJwtExpired(): boolean {
     return (
-      jwt.decode(this.googleIapJwt!, '', true).iat + this.tokenSoftExpiration < this.nowTimestamp()
+      this.tokenIssuedAt! + this.tokenSoftExpiration < this.nowTimestamp()
     );
   }
 
@@ -86,7 +101,7 @@ export class GoogleIapAuth {
       }
     );
     const responseData = await response.json();
-    if (response.status !== 200) {
+    if (!response.ok) {
       const errMessage = responseData.error_description ?? 'Unexpected response from Google service';
       throw(new GoogleIapAuthError(errMessage));
     }

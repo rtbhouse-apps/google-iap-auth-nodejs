@@ -21,6 +21,7 @@ const badKey = { invalid: 'content' };
 
 
 beforeAll(() => {
+  jwt.decode = jest.fn().mockReturnValue({ iat: Math.floor(Date.now() / 1000) });
   jwt.encode = jest.fn().mockReturnValue('encodedmessage');
 });
 
@@ -62,7 +63,6 @@ test('uses cached token for subsequent calls', async () => {
   nock('https://www.googleapis.com')
     .post('/oauth2/v4/token')
     .reply(200, JSON.stringify({ id_token: token }));
-  jwt.decode = jest.fn().mockReturnValue({ iat: Math.floor(Date.now() / 1000) });
 
   const googleIapAuth = new GoogleIapAuth('testId', goodKey);
   const spy = jest.spyOn<any, string>(GoogleIapAuth, 'getGoogleOpenIdConnectToken');
