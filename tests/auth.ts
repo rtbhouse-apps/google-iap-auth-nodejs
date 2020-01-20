@@ -3,7 +3,7 @@ import nock from 'nock';
 import { GoogleIapAuth, GoogleIapAuthError } from '../src/index';
 
 
-const goodKey = {
+const key = {
   type: 'service_account',
   project_id: 'test',
   private_key_id: '12345',
@@ -17,20 +17,16 @@ const goodKey = {
 };
 
 
-const badKey = { invalid: 'content' };
-
-
 beforeAll(() => {
   jwt.decode = jest.fn().mockReturnValue({ iat: Math.floor(Date.now() / 1000) });
   jwt.encode = jest.fn().mockReturnValue('encodedmessage');
 });
 
 
-test('read JSON key file with invalid content', async () => {
+test('soft expiration time greater then hard expiration time', async () => {
   expect(() => {
-    // @ts-ignore
-    new GoogleIapAuth('testId', badKey);
-  }).toThrowError(new GoogleIapAuthError('Invalid JSON key file format'));
+    new GoogleIapAuth('testId', key, 2000, 1000);
+  }).toThrowError(new Error('Soft expiration time should NOT be larger than hard expiration time'));
 });
 
 
@@ -39,7 +35,7 @@ test('handles error returned by Google service', async () => {
     .post('/oauth2/v4/token')
     .reply(400, JSON.stringify({ unexpected: 'data' }));
 
-  const googleIapAuth = new GoogleIapAuth('testId', goodKey);
+  const googleIapAuth = new GoogleIapAuth('testId', key);
 
   await expect(googleIapAuth.getToken())
     .rejects.toThrowError(new GoogleIapAuthError('Unexpected response from Google service'));
@@ -52,7 +48,7 @@ test('returns valid token from Google service', async () => {
     .post('/oauth2/v4/token')
     .reply(200, JSON.stringify({ id_token: token }));
 
-  const googleIapAuth = new GoogleIapAuth('testId', goodKey);
+  const googleIapAuth = new GoogleIapAuth('testId', key);
 
   await expect(googleIapAuth.getToken()).resolves.toEqual(token);
 });
@@ -64,7 +60,7 @@ test('uses cached token for subsequent calls', async () => {
     .post('/oauth2/v4/token')
     .reply(200, JSON.stringify({ id_token: token }));
 
-  const googleIapAuth = new GoogleIapAuth('testId', goodKey);
+  const googleIapAuth = new GoogleIapAuth('testId', key);
   const spy = jest.spyOn<any, string>(GoogleIapAuth, 'getGoogleOpenIdConnectToken');
 
   await expect(googleIapAuth.getToken()).resolves.toEqual(token);
