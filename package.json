@@ -1,9 +1,10 @@
 {
   "name": "@rtbhouse/google-iap-auth",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Helper library to perfrorm requests to OIDC-authenticated resources (Cloud Identity-Aware Proxy)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "files": [
     "dist/",
     "LICENSE",
