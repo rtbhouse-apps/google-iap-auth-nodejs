@@ -44,7 +44,7 @@
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@types/jest": "26.0.20",
+    "@types/jest": "26.0.24",
     "@types/jwt-simple": "0.5.33",
     "@types/node-fetch": "2.5.8",
     "@typescript-eslint/eslint-plugin": "3.10.1",
