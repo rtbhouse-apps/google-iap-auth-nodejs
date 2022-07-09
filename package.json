@@ -55,7 +55,7 @@
     "node-notifier": "8.0.2",
     "rimraf": "3.0.2",
     "ts-jest": "26.5.0",
-    "typescript": "3.9.7"
+    "typescript": "3.9.10"
   },
   "engines": {
     "node": ">= 8",
