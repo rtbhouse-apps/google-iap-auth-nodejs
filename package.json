@@ -46,7 +46,7 @@
   "devDependencies": {
     "@types/jest": "26.0.24",
     "@types/jwt-simple": "0.5.33",
-    "@types/node-fetch": "2.5.8",
+    "@types/node-fetch": "2.6.2",
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "5.30.5",
     "eslint": "7.19.0",
