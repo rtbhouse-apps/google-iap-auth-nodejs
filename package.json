@@ -44,17 +44,17 @@
     "node-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@types/jest": "26.0.24",
+    "@types/jest": "28.1.4",
     "@types/jwt-simple": "0.5.33",
     "@types/node-fetch": "2.6.2",
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "5.30.5",
     "eslint": "8.19.0",
-    "jest": "26.6.3",
+    "jest": "28.1.2",
     "nock": "13.2.8",
     "node-notifier": "10.0.1",
     "rimraf": "3.0.2",
-    "ts-jest": "26.5.6",
+    "ts-jest": "28.0.5",
     "typescript": "4.7.4"
   },
   "engines": {
