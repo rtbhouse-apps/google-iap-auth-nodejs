@@ -54,7 +54,7 @@
     "nock": "13.2.9",
     "node-notifier": "10.0.1",
     "rimraf": "3.0.2",
-    "ts-jest": "28.0.7",
+    "ts-jest": "28.0.8",
     "typescript": "4.7.4"
   },
   "engines": {
